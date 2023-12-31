@@ -14,4 +14,4 @@ const validateBody = (reqBody) => {
   }
 }
 
-module.exports = validateBody;
+module.exports = {validateBody};

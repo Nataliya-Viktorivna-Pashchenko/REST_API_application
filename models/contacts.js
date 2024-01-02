@@ -3,9 +3,9 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 
 const contactsPath = path.join(__dirname, "contacts.json");
+
 async function readContacts () {
     const data = await fs.readFile(contactsPath, {encoding: "utf-8"});
-    console.log(data);
     return JSON.parse(data);
 }
 
@@ -54,7 +54,8 @@ async function updateContactById(id, contact){
     if (index === -1){
         return null
     }
-    contacts[index] = {id, ...contact};
+    const oldContact = await getContactById(id);
+    contacts[index] = {...oldContact, ...contact};
     await writeContacts(contacts);
     return contacts[index];
 }

@@ -15,4 +15,6 @@ router.delete('/:id', controllers.deleteById)
 
 router.put('/:id', jsonParser, controllers.put)
 
+router.patch('/:id/favorite', jsonParser, controllers.changeFavorite)
+
 module.exports = router;

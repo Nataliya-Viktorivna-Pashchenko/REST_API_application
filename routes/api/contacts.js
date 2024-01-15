@@ -1,20 +1,21 @@
 const express = require('express')
 const router = express.Router();
 const jsonParser = express.json();
-const controllers = require('../../service/controllers')
+const controllers = require('../../service/controllers');
+const isValidId = require('../../service/isValidId');
 
 
 
 router.get('/', controllers.getAll)
 
-router.get('/:id', controllers.getById)
+router.get('/:id', isValidId, controllers.getById)
 
 router.post('/', jsonParser, controllers.add)
 
-router.delete('/:id', controllers.deleteById)
+router.delete('/:id', isValidId, controllers.deleteById)
 
-router.put('/:id', jsonParser, controllers.put)
+router.put('/:id',  jsonParser, isValidId, controllers.put)
 
-router.patch('/:id/favorite', jsonParser, controllers.changeFavorite)
+router.patch('/:id/favorite', jsonParser, isValidId, controllers.changeFavorite)
 
 module.exports = router;

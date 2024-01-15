@@ -2,7 +2,8 @@
 const validateBody = require('./validate');
 const wrapperCtrl = require('./wrapperCtrl');
 const Contact =  require('../models/contact');
-const validateFavorite = require('./validate')
+const validateFavorite = require('./validate');
+const isValidId = require('./isValidId')
 
 const getAll = async (req, res) => {
           const contacts = await Contact.find();

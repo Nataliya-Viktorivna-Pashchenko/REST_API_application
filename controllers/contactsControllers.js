@@ -1,34 +1,43 @@
-// const Contacts = require('../models/contacts');
-const validateBody = require('./validate');
-const wrapperCtrl = require('./wrapperCtrl');
+const validateBody = require('../service/validateContacts');
+const wrapperCtrl = require('../service/wrapperCtrl');
 const Contact =  require('../models/contact');
-const validateFavorite = require('./validate');
-const isValidId = require('./isValidId')
+const validateFavorite = require('../service/validateContacts');
 
 const getAll = async (req, res) => {
-          const contacts = await Contact.find();
+  const userId = req.user._id;
+          const contacts = await Contact.find({owner: userId});
       res.json(contacts);
   }
 
   const getById = async (req, res) => {
+    const userId = req.user._id;
          const contact = await Contact.findById (req.params.id)
-      if (!contact) {
+      if (contact === null || contact.owner.toString() !== userId) {
         res.status(404).json({"message": "Not found"});
         }
+      
     res.json(contact);
   }
 
 const add = async (req, res) => {
   validateBody.validateBody(req.body);
-      const contact =await Contact.create(req.body);
+  const newContact = { 
+    name: req.body.name,
+    phone: req.body.phone,
+    email: req.body.email,
+    owner: req.user._id
+  }
+      const contact =await Contact.create(newContact);
     res.status(201).json(contact);
  }
 
  const deleteById = async (req, res) => {
-    const result = await Contact.findByIdAndDelete(req.params.id)
-  if (!result) {
-       res.status(404).json({"message": "Not found"});
-  }
+  const userId = req.user._id;
+  const contact = await Contact.findById (req.params.id)
+if (contact === null || contact.owner.toString() !== userId) {
+ res.status(404).json({"message": "Not found"});
+ }
+     await Contact.findByIdAndDelete(req.params.id)
   res.status(200).json({"message": "contact deleted"});
 }
 
@@ -37,12 +46,13 @@ const put = async (req, res) => {
     res.status(400).json({"message": "missing fields"});
   }
   validateBody.validateBodyUpdate(req.body);
+  const userId = req.user._id;
+  const contact = await Contact.findById (req.params.id)
+if (contact === null || contact.owner.toString() !== userId) {
+ res.status(404).json({"message": "Not found"});
+ }
     const result = await Contact.findByIdAndUpdate(req.params.id, req.body, {new: true});
-    if (!result) {
-      res.status(404).json({"message": "Not found"});
-    }
-
-    res.status(200).json(result);
+       res.status(200).json(result);
 }
 
 const changeFavorite = async (req, res) => {
@@ -50,10 +60,12 @@ const changeFavorite = async (req, res) => {
     res.status(400).json({"message": "missing field favorite"});
   }
   validateFavorite.validateFavorite(req.body);
+  const userId = req.user._id;
+  const contact = await Contact.findById (req.params.id)
+if (contact === null || contact.owner.toString() !== userId) {
+ res.status(404).json({"message": "Not found"});
+ }
     const result = await Contact.findByIdAndUpdate(req.params.id, req.body, {new: true});
-    if (!result) {
-      res.status(404).json({"message": "Not found"});
-    }
     res.status(200).json(result);
 }
 
@@ -63,5 +75,5 @@ const changeFavorite = async (req, res) => {
     add: wrapperCtrl(add),
     deleteById: wrapperCtrl(deleteById),
     put: wrapperCtrl(put),
-    changeFavorite: wrapperCtrl(changeFavorite)
+    changeFavorite: wrapperCtrl(changeFavorite),
   }

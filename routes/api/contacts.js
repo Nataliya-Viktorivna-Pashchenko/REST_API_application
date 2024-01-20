@@ -1,8 +1,9 @@
 const express = require('express')
 const router = express.Router();
 const jsonParser = express.json();
-const controllers = require('../../service/controllers');
+const controllers = require('../../controllers/contactsControllers');
 const isValidId = require('../../service/isValidId');
+
 
 
 

@@ -32,12 +32,14 @@ const add = async (req, res) => {
  }
 
  const deleteById = async (req, res) => {
-  const userId = req.user._id;
-  const contact = await Contact.findById (req.params.id)
-if (contact === null || contact.owner.toString() !== userId) {
- res.status(404).json({"message": "Not found"});
- }
-     await Contact.findByIdAndDelete(req.params.id)
+  const { id: _id } = req.params;
+    const { _id: owner } = req.user;
+
+     const result = await Contact.findByIdAndDelete({_id, owner});
+     if (result === null) {
+      res.status(404).json({"message": "Not found"});
+     }
+
   res.status(200).json({"message": "contact deleted"});
 }
 
@@ -46,12 +48,14 @@ const put = async (req, res) => {
     res.status(400).json({"message": "missing fields"});
   }
   validateBody.validateBodyUpdate(req.body);
-  const userId = req.user._id;
-  const contact = await Contact.findById (req.params.id)
-if (contact === null || contact.owner.toString() !== userId) {
- res.status(404).json({"message": "Not found"});
- }
-    const result = await Contact.findByIdAndUpdate(req.params.id, req.body, {new: true});
+
+    const { id: _id } = req.params;
+    const { _id: owner } = req.user;
+
+    const result = await Contact.findByIdAndUpdate({_id, owner}, req.body, {new: true});
+    if (result === null) {
+      res.status(404).json({"message": "Not found"});
+     }
        res.status(200).json(result);
 }
 
@@ -60,12 +64,14 @@ const changeFavorite = async (req, res) => {
     res.status(400).json({"message": "missing field favorite"});
   }
   validateFavorite.validateFavorite(req.body);
-  const userId = req.user._id;
-  const contact = await Contact.findById (req.params.id)
-if (contact === null || contact.owner.toString() !== userId) {
- res.status(404).json({"message": "Not found"});
- }
-    const result = await Contact.findByIdAndUpdate(req.params.id, req.body, {new: true});
+  
+  const { id: _id } = req.params;
+  const { _id: owner } = req.user;
+
+    const result = await Contact.findByIdAndUpdate({_id, owner}, req.body, {new: true});
+    if (result === null) {
+      res.status(404).json({"message": "Not found"});
+     }
     res.status(200).json(result);
 }
 

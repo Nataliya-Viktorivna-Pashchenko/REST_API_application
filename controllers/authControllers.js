@@ -38,7 +38,7 @@ const addUser = async (req, res) => {
     await User.findByIdAndUpdate(userLog._id, {token});
 
     const {subscription} = userLog;
-    res.status(200).json({"token":`${token}`, "user": {"email":`${email}`, "subscription":`${subscription}`}});
+    res.status(200).json({"token":token, "user": {"email":email, "subscription":subscription}});
    }
 
    const logout = async (req, res) =>{

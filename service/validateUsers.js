@@ -6,6 +6,21 @@ password: Joi.string().required(),
 subscription: Joi.string()
 })
 
+const updateUserSubscription = Joi.object({
+  subscription: Joi.string().valid('starter', 'pro', 'business')
+})
+
+
+const validateSubscription = (reqBody) => {
+const { error } = updateUserSubscription.validate(reqBody, {
+  errors: {wrap: { label:false}},
+  messages: { "any.required": "missing required {{#label}} field" }
+});
+if (error) {
+  error.status = 400;
+  throw error;
+}
+}
 
 
 const validateUser = (reqBody) => {
@@ -21,4 +36,4 @@ const validateUser = (reqBody) => {
 
 
 
-module.exports = {validateUser};
+module.exports = {validateUser, validateSubscription};

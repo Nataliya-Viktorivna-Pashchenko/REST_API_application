@@ -74,6 +74,11 @@ const changeSubscription = async (req, res) => {
 }
 
 const avatar = async (req, res) => {
+  
+if (req.file === undefined) {
+  res.status(400).json({"message": "missing field avatar"});
+}
+const sendPath = path.join("/avatars", req.file.filename);
 
     const newPath = path.join(__dirname, "..", 'public/avatars', req.file.filename);
 
@@ -84,9 +89,9 @@ const avatar = async (req, res) => {
 
     await fs.rename(req.file.path, newPath);
     
-    const user = await User.findByIdAndUpdate(req.user._id, {avatarURL: newPath}, {new: true});
+    const user = await User.findByIdAndUpdate(req.user._id, {avatarURL: sendPath}, {new: true});
 
-    res.send(user);
+    res.send({"avatarURL": user.avatarURL});
    }
 
    module.exports = {

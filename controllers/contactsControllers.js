@@ -3,9 +3,17 @@ const wrapperCtrl = require('../service/wrapperCtrl');
 const Contact =  require('../models/contact');
 const validateFavorite = require('../service/validateContacts');
 
+
 const getAll = async (req, res) => {
+  const favorite = req.query.favorite;
+  const limit = parseInt(req.query.limit) || 10;
+  const page = parseInt(req.query.page) || 1;
   const userId = req.user._id;
-          const contacts = await Contact.find({owner: userId});
+  if (favorite === undefined) {
+    const contacts = await Contact.paginate({owner: userId}, {limit, page});
+    res.json(contacts);
+  }
+          const contacts = await Contact.paginate({owner: userId, favorite}, {limit, page});
       res.json(contacts);
   }
 
@@ -64,7 +72,7 @@ const changeFavorite = async (req, res) => {
     res.status(400).json({"message": "missing field favorite"});
   }
   validateFavorite.validateFavorite(req.body);
-  
+ 
   const { id: _id } = req.params;
   const { _id: owner } = req.user;
 

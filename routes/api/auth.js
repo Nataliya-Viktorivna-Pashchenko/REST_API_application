@@ -19,6 +19,10 @@ router.patch('/', authHeader, jsonParser, authControllers.changeSubscription);
 
 router.patch('/avatars',authHeader, upload.single('avatar'), authControllers.avatar);
 
+router.get('/verify/:verificationToken', authControllers.verifyEmail);
+
+router.get('/verify/', jsonParser, authControllers.verifyEmailAgain);
+
 
 
 module.exports = router;

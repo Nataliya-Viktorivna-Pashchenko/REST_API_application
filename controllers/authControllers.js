@@ -127,7 +127,7 @@ const verifyEmailAgain = async (req, res) => {
   if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
     res.status(400).json({"message": "missing required field email"});
   }
-  validateUser.validateUser(req.body);
+  validateUser.validateEmail(req.body);
 
   const user = await User.findOne(req.body);
   if (user === null){

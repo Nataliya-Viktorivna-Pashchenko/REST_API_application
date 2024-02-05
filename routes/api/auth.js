@@ -21,7 +21,7 @@ router.patch('/avatars',authHeader, upload.single('avatar'), authControllers.ava
 
 router.get('/verify/:verificationToken', authControllers.verifyEmail);
 
-router.get('/verify/', jsonParser, authControllers.verifyEmailAgain);
+router.post('/verify', jsonParser, authControllers.verifyEmailAgain);
 
 
 

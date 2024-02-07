@@ -7,6 +7,9 @@ const fs = require('node:fs/promises');
 const path = require("node:path");
 const gravatar = require ("gravatar");
 const Jimp = require('jimp');
+const sendEmail = require("../service/sendEmail.js");
+// const nanoid = require("nanoid");
+const { v4: uuidv4 } = require('uuid');
 
 const addUser = async (req, res) => {
   validateUser.validateUser(req.body);
@@ -18,7 +21,17 @@ const addUser = async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10)
     const avatarURL = gravatar.url(email);
 
-   const user =await User.create({email, password: passwordHash, avatarURL});
+    const verificationToken = uuidv4();
+
+   await sendEmail({
+      to: email,
+      from: "nvpashchenko@ukr.net",
+      subject: "Welcome to Phonebook",
+      html:`To confirm your registration please click on the <a href="http://localhost:3000/api/users/verify/${verificationToken}">link</a>`,
+      text: `To confirm your registration please click on thehttp://localhost:3000/api/users/verify/${verificationToken}`
+    })
+
+   const user =await User.create({email, verificationToken, password: passwordHash, avatarURL});
 
       const {subscription} = user;
       
@@ -37,7 +50,10 @@ const logUser = async(req, res) => {
     if (isMatch === false) {
       return res.status(401).json({"message": "Email or password is wrong"})
     }
-   
+   if (userLog.verify === false){
+    return res.status(401).send({message:"Your email is not verified"})
+   }
+
     const token = jwt.sign({id: userLog._id}, process.env.JWT_SECRET, {expiresIn: 60*60});
 
     await User.findByIdAndUpdate(userLog._id, {token});
@@ -87,12 +103,49 @@ const sendPath = path.join("/avatars", req.file.filename);
       image.resize(250,250).write(newPath);
     });
 
+
     await fs.rename(req.file.path, newPath);
     
     const user = await User.findByIdAndUpdate(req.user._id, {avatarURL: sendPath}, {new: true});
 
     res.send({"avatarURL": user.avatarURL});
    }
+
+const verifyEmail = async (req, res) => {
+    const {verificationToken} = req.params;
+
+    const user = await User.findOne({verificationToken});
+    if (user === null){
+      return res.status(404).send({message: 'User not found'});
+          };
+    await User.findByIdAndUpdate(user._id, {verify: true, verificationToken:null })
+    res.status(200).send({message: 'Verification successful'})
+
+   }
+
+const verifyEmailAgain = async (req, res) => {
+  if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
+    res.status(400).json({"message": "missing required field email"});
+  }
+  validateUser.validateEmail(req.body);
+
+  const user = await User.findOne(req.body);
+  if (user === null){
+  return res.status(404).send({message: 'User not found'});
+      };
+      if (user.verificationToken === null) {
+        return res.status(400).send({"message": "Verification has already been passed"})
+      }
+  const {email} = req.body;
+      await sendEmail({
+        to: email,
+        from: "nvpashchenko@ukr.net",
+        subject: "Welcome to Phonebook",
+        html:`To confirm your registration please click on the <a href="http://localhost:3000/api/users/verify/${user.verificationToken}">link</a>`,
+        text: `To confirm your registration please click on thehttp://localhost:3000/api/users/verify/${user.verificationToken}`
+      })
+      res.status(200).send({"message": "Verification email sent"})
+}
 
    module.exports = {
     addUser: wrapperCtrl(addUser),
@@ -101,4 +154,6 @@ const sendPath = path.join("/avatars", req.file.filename);
     current: wrapperCtrl(current),
     avatar: wrapperCtrl(avatar),
     changeSubscription: wrapperCtrl(changeSubscription),
+    verifyEmail: wrapperCtrl(verifyEmail),
+    verifyEmailAgain: wrapperCtrl(verifyEmailAgain),
     }
